@@ -83,25 +83,3 @@ curl -X POST -F "code=print('hello world!')" http://localhost:8000/execute_code
   "code": "import pandas as pd\nimport numpy as np\n\nnp.random.seed(42)\ndata = pd.DataFrame({\n    'A': np.random.randint(1, 100, 20),\n    'B': np.random.normal(0, 1, 20),\n    'C': np.random.choice(['X', 'Y', 'Z'], 20)\n})\nprint('First 5 rows:')\nprint(data.head())\nprint('\\nSummary statistics:')\nprint(data.describe())\nprint('\\nValue counts for column C:')\nprint(data['C'].value_counts())\nprint('\\nCorrelation matrix:')\nprint(data.corr())"
 }
 ```
-
----
-
-## Troubleshooting
-- **Slow execution?**
-  - Make sure you are using the custom Docker image (`fastmcp-python:latest`).
-  - On Windows, use WSL2 backend for Docker for best performance.
-  - Avoid running unnecessary background processes in Docker.
-- **Missing libraries?**
-  - Rebuild the Docker image after editing the Dockerfile.
-- **Docker errors?**
-  - Ensure Docker Desktop is running and you have permission to run containers.
-
----
-
-## Security Note
-- This server executes arbitrary Python code in containers. Do **not** expose it to the public internet without proper authentication and firewalling.
-
----
-
-## License
-MIT
