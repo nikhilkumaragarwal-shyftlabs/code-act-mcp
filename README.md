@@ -114,7 +114,4 @@ The following libraries are allowed for code execution (see `utils.py`):
 - `tests/` — Example test clients
 - `agentrun-api/docker/` — Dockerfiles for API and code runner
 
----
 
-## License
-MIT
