@@ -1,0 +1,12 @@
+# external libraries
+fastmcp
+
+# other
+requests
+pydantic
+uvicorn
+agentrun
+docker
+RestrictedPython
+#setuptools
+#wheel
