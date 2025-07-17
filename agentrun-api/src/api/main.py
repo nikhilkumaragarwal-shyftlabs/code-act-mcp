@@ -1,5 +1,4 @@
-from fastmcp import FastMCP
-
+from fastmcp import FastMCP, Context
 import asyncio
 import os
 from concurrent.futures import ThreadPoolExecutor
@@ -23,7 +22,7 @@ class OutputSchema(BaseModel):
 mcp = FastMCP("Code MCP Server")
 
 @mcp.tool()
-async def execute_code(code: str) -> OutputSchema:
+async def execute_code(code_schema: CodeSchema) -> OutputSchema:
     """Execute Python code in a sandbox environment
     
     Args:
@@ -35,12 +34,9 @@ async def execute_code(code: str) -> OutputSchema:
         cached_dependencies=[],
         default_timeout=60 * 5,
     )
-    python_code = code
+    python_code = code_schema.code
     with ThreadPoolExecutor() as executor:
         future = executor.submit(runner.execute_code_in_container, python_code)
         output = await asyncio.wrap_future(future)
     return OutputSchema(output=output)
 
-# MAIN - Run the server
-if __name__ == "__main__":
-    mcp.run(transport="sse", host="0.0.0.0", port=3456)

@@ -39,7 +39,7 @@ class AgentRun:
         self,
         container_name,
         dependencies_whitelist=get_approved_libraries(),
-        cached_dependencies=[],
+        cached_dependencies=get_approved_libraries(),
         cpu_quota=50000,
         default_timeout=20,
         memory_limit="100m",
@@ -56,7 +56,6 @@ class AgentRun:
         # this is to allow a mock client to be passed in for testing if docker is not available (not implemented yet)
         self.client = client or docker.from_env()
         self.cached_dependencies = cached_dependencies
-
         try:
             self.client = client or docker.from_env()
             self.client.ping()
@@ -282,7 +281,7 @@ class AgentRun:
                 ):
                     dependencies.append(module_name)
         return list(set(dependencies))  # Return unique dependencies
-
+    # TODO: turn pip install statements to "uv pip install" for faster installation
     def install_dependencies(self, container: Container, dependencies: list) -> str:
         """Install dependencies in the container.
         Args:
@@ -301,7 +300,7 @@ class AgentRun:
                     return f"Dependency: {dep} is not in the whitelist."
         # if we are doing caching, we need to check if the dependencies are already installed
         if self.cached_dependencies:
-            exec_log = container.exec_run(cmd="uv pip list", workdir="/code")
+            exec_log = container.exec_run(cmd="pip list", workdir="/code")
             exit_code, output = exec_log.exit_code, exec_log.output.decode("utf-8")
             installed_packages = output.splitlines()
             installed_packages = [
@@ -309,11 +308,10 @@ class AgentRun:
             ]
         else:
             installed_packages = []
-
         for dep in dependencies:
             if dep.lower() in installed_packages:
                 continue
-            command = f"uv pip install {dep} --system"
+            command = f"pip install {dep}"
             exit_code, output = self.execute_command_in_container(
                 container, command, timeout=120
             )
@@ -334,7 +332,7 @@ class AgentRun:
             # do not uninstall dependencies that are cached_dependencies
             if dep in self.cached_dependencies:
                 continue
-            command = f"uv pip uninstall -y {dep}"
+            command = f"pip uninstall {dep}"
             exit_code, output = self.execute_command_in_container(
                 container, command, timeout=120
             )

@@ -2,11 +2,12 @@
 fastmcp
 
 # other
+setuptools
+wheel
 requests
 pydantic
 uvicorn
-agentrun
 docker
 RestrictedPython
-#setuptools
-#wheel
+uv
+

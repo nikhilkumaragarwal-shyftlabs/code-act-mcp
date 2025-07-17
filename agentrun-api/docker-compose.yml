@@ -3,7 +3,7 @@ services:
     build:
       context: ./ 
       dockerfile: docker/api/Dockerfile
-    command: ["python", "api/main.py"]
+    command: fastmcp run api/main.py:mcp --host 0.0.0.0 -p 3456 -t sse
     volumes:
       - ./src:/code 
       - /var/run/docker.sock:/var/run/docker.sock

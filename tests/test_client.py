@@ -1,17 +1,20 @@
 from fastmcp import Client
 import asyncio
+from pydantic import BaseModel
+class CodeSchema(BaseModel):
+    code: str
 
 async def main():
     # Connect via SSE to your MCP server
     async with Client("http://localhost:3456/sse") as client:
         # List available tools
         tools = await client.list_tools()
-        print(f"Available tools: {tools}")
+        print(f"Available tools: {[t.name for t in tools]}")
         
         # Test 1: Simple Python code
         print("\n=== Test 1: Simple Python code ===")
-        result1 = await client.call_tool("execute_code", {"code": "print('Hello, World!')\nx = 5 + 3\nprint(f'Result: {x}')"})
-        print(f"Result: {result1.text}")
+        result1 = await client.call_tool("execute_code", {"code_schema": CodeSchema(code="print('Hello, World!')\nx = 5 + 3\nprint(f'Result: {x}')")})
+        print(f"Result:\n\n {result1.data.output}")
         
         # Test 2: Using approved library (pandas)
         print("\n=== Test 2: Using approved library (pandas) ===")
@@ -22,8 +25,8 @@ print("DataFrame created:")
 print(df)
 print(f"Shape: {df.shape}")
 """
-        result2 = await client.call_tool("execute_code", {"code": pandas_code})
-        print(f"Result: {result2.text}")
+        result2 = await client.call_tool("execute_code", {"code_schema": CodeSchema(code=pandas_code)})
+        print(f"Result:\n\n {result2.data.output}")
         
         # Test 3: Using approved library (numpy)
         print("\n=== Test 3: Using approved library (numpy) ===")
@@ -34,8 +37,8 @@ print(f"Array: {arr}")
 print(f"Mean: {np.mean(arr)}")
 print(f"Sum: {np.sum(arr)}")
 """
-        result3 = await client.call_tool("execute_code", {"code": numpy_code})
-        print(f"Result: {result3.text}")
+        result3 = await client.call_tool("execute_code", {"code_schema": CodeSchema(code=numpy_code)})
+        print(f"Result:\n\n {result3.data.output}")
         
         # Test 4: Using approved library (matplotlib)
         print("\n=== Test 4: Using approved library (matplotlib) ===")
@@ -56,8 +59,8 @@ plt.grid(True)
 plt.savefig('sine_wave.png')
 print("Plot saved as sine_wave.png")
 """
-        result4 = await client.call_tool("execute_code", {"code": matplotlib_code})
-        print(f"Result: {result4.text}")
+        result4 = await client.call_tool("execute_code", {"code_schema": CodeSchema(code=matplotlib_code)})
+        print(f"Result:\n\n {result4.data.output}")
         
         # Test 5: Error handling - division by zero
         print("\n=== Test 5: Error handling ===")
@@ -67,8 +70,8 @@ try:
 except ZeroDivisionError as e:
     print(f"Error caught: {e}")
 """
-        result5 = await client.call_tool("execute_code", {"code": error_code})
-        print(f"Result: {result5.text}")
+        result5 = await client.call_tool("execute_code", {"code_schema": CodeSchema(code=error_code)})
+        print(f"Result:\n\n {result5.data.output}")
 
 if __name__ == "__main__":
     asyncio.run(main()) 
