@@ -1,14 +1,15 @@
-# Secure MCP Server
+# Secure Python Code Execution Server (with FastMCP)
 
-A FastAPI-based server for secure, containerized Python code execution using Docker and FastMCP. Supports code execution with popular data science libraries in a sandboxed environment.
+A secure, containerized Python code execution server using Docker and [FastMCP](https://github.com/nikhilkumaragarwal-shyftlabs/FastMCP). Supports safe execution of Python code with popular data science libraries in a sandboxed environment, accessible via the MCP tool interface.
 
 ---
 
 ## Features
 - Execute arbitrary Python code securely in Docker containers
-- Pre-installed data science libraries (pandas, numpy, matplotlib, etc.)
-- FastMCP tool interface for agent integration
-- REST API for HTTP clients (e.g., n8n)
+- Whitelisted data science libraries (pandas, numpy, matplotlib, etc.)
+- [FastMCP](https://github.com/nikhilkumaragarwal-shyftlabs/FastMCP) tool interface for agent and client integration
+- Resource limits (CPU, memory, timeout) and code safety checks
+- Example test clients provided
 
 ---
 
@@ -24,62 +25,93 @@ A FastAPI-based server for secure, containerized Python code execution using Doc
 1. **Clone the repository**
    ```bash
    git clone https://github.com/nikhilkumaragarwal-shyftlabs/FastMCP.git
-   cd mcp-server-demo
+   cd code-act-mcp
    ```
 
 2. **Install Python dependencies**
    ```bash
-   pip install -r requirements.txt
+   pip install -r agentrun-api/requirements.txt
    ```
 
-3. **Build the custom Docker image**
-   ```bash
-   docker build -t fastmcp-python:latest .
-   ```
-   This image includes all allowed libraries for code execution.
+3. **Build the Docker images**
+   - API image:
+     ```bash
+     docker build -t codeact-api:latest -f agentrun-api/docker/api/Dockerfile agentrun-api/
+     ```
+   - (Optional) Code runner image:
+     ```bash
+     docker build -t codeact-runner:latest -f agentrun-api/docker/code_runner/Dockerfile agentrun-api/
+     ```
 
 ---
 
 ## Running the Server
 
-### 1. **FastAPI HTTP Server (for REST API)**
-
+### 1. **Start a Docker container for code execution**
+You must have a running Docker container (e.g., using the built image) for the server to execute code in. Example:
 ```bash
-uvicorn secure_mcp_server:app --reload
+docker run -d --name codeact_runner --rm -v /tmp:/tmp codeact-api:latest tail -f /dev/null
 ```
-- Access the API at: `http://localhost:8000`
-- Endpoints:
-  - `POST /execute_code` — Execute Python code (form-data: `code`, optional `timeout`, optional `files`)
-  - `GET /available_libraries` — List allowed libraries
-  - `GET /mcp_schema` — Tool schema for agents
 
-### 2. **MCP Server (for agent/CLI integration, with SSE)**
-
+### 2. **Run the MCP Server**
 ```bash
-fastmcp run secure_mcp_server.py --transport sse --port 9000
+python agentrun-api/src/api/main.py
 ```
-- SSE endpoint: `http://localhost:9000/sse`
-- Use with MCP-compatible clients or agents
+- The server will listen on port 3456 by default (SSE transport).
+- The MCP tool `execute_code` will be available for clients.
 
 ---
 
-## Example: Execute Code via HTTP (e.g., n8n or curl)
+## Usage Example (with FastMCP Client)
 
-**Request:**
-```json
-{
-  "code": "print(\"hello world!\")"
-}
+See `tests/simple_test.py` and `tests/test_client.py` for usage examples.
+
+**Example:**
+```python
+from fastmcp import Client
+import asyncio
+
+async def test():
+    async with Client("http://localhost:3456/sse") as client:
+        result = await client.call_tool("execute_code", {"code": "print('Hello, World!')"})
+        print(result.text)
+
+asyncio.run(test())
 ```
 
-**With curl:**
-```bash
-curl -X POST -F "code=print('hello world!')" http://localhost:8000/execute_code
-```
+---
 
-**Complex Example:**
-```json
-{
-  "code": "import pandas as pd\nimport numpy as np\n\nnp.random.seed(42)\ndata = pd.DataFrame({\n    'A': np.random.randint(1, 100, 20),\n    'B': np.random.normal(0, 1, 20),\n    'C': np.random.choice(['X', 'Y', 'Z'], 20)\n})\nprint('First 5 rows:')\nprint(data.head())\nprint('\\nSummary statistics:')\nprint(data.describe())\nprint('\\nValue counts for column C:')\nprint(data['C'].value_counts())\nprint('\\nCorrelation matrix:')\nprint(data.corr())"
-}
-```
+## Approved Libraries
+The following libraries are allowed for code execution (see `utils.py`):
+- pandas, numpy, openpyxl, xlsxwriter, PyPDF2, pdfplumber, python-docx, python-pptx, pillow, pytesseract, matplotlib, plotly, seaborn, reportlab
+
+---
+
+## Security Model
+- All code is executed in an isolated Docker container with resource limits (CPU, memory, timeout).
+- Only whitelisted libraries can be imported and installed.
+- Code is statically analyzed for dangerous patterns (e.g., use of os, sys, subprocess, exec, eval, etc.) before execution.
+- Each code execution is sandboxed and cleaned up after running.
+
+---
+
+## Testing
+
+- Run the provided test clients:
+  ```bash
+  python tests/simple_test.py
+  python tests/test_client.py
+  ```
+- These tests connect to the MCP server and exercise code execution, library usage, and error handling.
+
+---
+
+## Project Structure
+
+- `agentrun/` — Core code execution logic (AgentRun class)
+- `agentrun-api/src/api/` — MCP server API (main.py)
+- `utils.py` — Approved libraries utility
+- `tests/` — Example test clients
+- `agentrun-api/docker/` — Dockerfiles for API and code runner
+
+
