@@ -39,7 +39,7 @@ class AgentRun:
         self,
         container_name,
         dependencies_whitelist=get_approved_libraries(),
-        cached_dependencies=get_approved_libraries(),
+        cached_dependencies=[],
         cpu_quota=50000,
         default_timeout=20,
         memory_limit="100m",
@@ -300,7 +300,7 @@ class AgentRun:
                     return f"Dependency: {dep} is not in the whitelist."
         # if we are doing caching, we need to check if the dependencies are already installed
         if self.cached_dependencies:
-            exec_log = container.exec_run(cmd="pip list", workdir="/code")
+            exec_log = container.exec_run(cmd="uv pip list", workdir="/code")
             exit_code, output = exec_log.exit_code, exec_log.output.decode("utf-8")
             installed_packages = output.splitlines()
             installed_packages = [
@@ -311,7 +311,7 @@ class AgentRun:
         for dep in dependencies:
             if dep.lower() in installed_packages:
                 continue
-            command = f"pip install {dep}"
+            command = f"uv pip install {dep} --system"
             exit_code, output = self.execute_command_in_container(
                 container, command, timeout=120
             )
@@ -332,7 +332,7 @@ class AgentRun:
             # do not uninstall dependencies that are cached_dependencies
             if dep in self.cached_dependencies:
                 continue
-            command = f"pip uninstall {dep}"
+            command = f"uv pip uninstall -y {dep}"
             exit_code, output = self.execute_command_in_container(
                 container, command, timeout=120
             )

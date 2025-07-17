@@ -30,35 +30,34 @@ A secure, containerized Python code execution server using Docker and [FastMCP](
 
 2. **Install Python dependencies**
    ```bash
+   python3 -m venv venv
+   source venv/bin/activate
    pip install -r agentrun-api/requirements.txt
    ```
 
-3. **Build the Docker images**
-   - API image:
-     ```bash
-     docker build -t codeact-api:latest -f agentrun-api/docker/api/Dockerfile agentrun-api/
-     ```
-   - (Optional) Code runner image:
-     ```bash
-     docker build -t codeact-runner:latest -f agentrun-api/docker/code_runner/Dockerfile agentrun-api/
-     ```
+3. **Build the Docker image**
+   ```bash
+   docker build -t codeact-api:latest -f agentrun-api/docker/api/Dockerfile agentrun-api/
+   ```
 
 ---
 
 ## Running the Server
 
 ### 1. **Start a Docker container for code execution**
-You must have a running Docker container (e.g., using the built image) for the server to execute code in. Example:
+You must have a running Docker container named **agentrun-api_python_runner_1** for the server to execute code in. Example:
 ```bash
-docker run -d --name codeact_runner --rm -v /tmp:/tmp codeact-api:latest tail -f /dev/null
+docker run -d --name agentrun-api_python_runner_1 --rm -v /tmp:/tmp codeact-api:latest tail -f /dev/null
 ```
 
-### 2. **Run the MCP Server**
+### 2. **Start the MCP Server**
+With your virtual environment activated:
 ```bash
 python agentrun-api/src/api/main.py
 ```
 - The server will listen on port 3456 by default (SSE transport).
 - The MCP tool `execute_code` will be available for clients.
+- **Note:** By default, the server looks for a container named `agentrun-api_python_runner_1`. If you want to use a different name, set the `CONTAINER_NAME` environment variable before starting the server.
 
 ---
 
@@ -114,4 +113,22 @@ The following libraries are allowed for code execution (see `utils.py`):
 - `tests/` — Example test clients
 - `agentrun-api/docker/` — Dockerfiles for API and code runner
 
+---
 
+## Quick Reference Table
+
+| Step | Command                                                                                  | Notes                        |
+|------|------------------------------------------------------------------------------------------|------------------------------|
+| 1    | Start Docker Desktop                                                                     |                              |
+| 2    | `python3 -m venv venv`<br>`source venv/bin/activate`                                     |                              |
+| 3    | `pip install -r agentrun-api/requirements.txt`                                           |                              |
+| 4    | `docker build -t codeact-api:latest -f agentrun-api/docker/api/Dockerfile agentrun-api/` |                              |
+| 5    | `docker run -d --name agentrun-api_python_runner_1 --rm -v /tmp:/tmp codeact-api:latest tail -f /dev/null` | Must use this name |
+| 6    | `python agentrun-api/src/api/main.py`                                                    | Leave this running           |
+| 7    | `source venv/bin/activate` (in new terminal)                                             |                              |
+| 8    | `python tests/test_client.py`                                                            | See test results             |
+
+---
+
+## License
+MIT

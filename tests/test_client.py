@@ -1,8 +1,5 @@
 from fastmcp import Client
 import asyncio
-from pydantic import BaseModel
-class CodeSchema(BaseModel):
-    code: str
 
 async def main():
     # Connect via SSE to your MCP server
@@ -13,7 +10,7 @@ async def main():
         
         # Test 1: Simple Python code
         print("\n=== Test 1: Simple Python code ===")
-        result1 = await client.call_tool("execute_code", {"code_schema": CodeSchema(code="print('Hello, World!')\nx = 5 + 3\nprint(f'Result: {x}')")})
+        result1 = await client.call_tool("execute_code", {"code": "print('Hello, World!')\nx = 5 + 3\nprint(f'Result: {x}')"})
         print(f"Result:\n\n {result1.data.output}")
         
         # Test 2: Using approved library (pandas)
@@ -25,7 +22,7 @@ print("DataFrame created:")
 print(df)
 print(f"Shape: {df.shape}")
 """
-        result2 = await client.call_tool("execute_code", {"code_schema": CodeSchema(code=pandas_code)})
+        result2 = await client.call_tool("execute_code", {"code": pandas_code})
         print(f"Result:\n\n {result2.data.output}")
         
         # Test 3: Using approved library (numpy)
@@ -37,7 +34,7 @@ print(f"Array: {arr}")
 print(f"Mean: {np.mean(arr)}")
 print(f"Sum: {np.sum(arr)}")
 """
-        result3 = await client.call_tool("execute_code", {"code_schema": CodeSchema(code=numpy_code)})
+        result3 = await client.call_tool("execute_code", {"code": numpy_code})
         print(f"Result:\n\n {result3.data.output}")
         
         # Test 4: Using approved library (matplotlib)
@@ -59,7 +56,7 @@ plt.grid(True)
 plt.savefig('sine_wave.png')
 print("Plot saved as sine_wave.png")
 """
-        result4 = await client.call_tool("execute_code", {"code_schema": CodeSchema(code=matplotlib_code)})
+        result4 = await client.call_tool("execute_code", {"code": matplotlib_code})
         print(f"Result:\n\n {result4.data.output}")
         
         # Test 5: Error handling - division by zero
@@ -70,7 +67,7 @@ try:
 except ZeroDivisionError as e:
     print(f"Error caught: {e}")
 """
-        result5 = await client.call_tool("execute_code", {"code_schema": CodeSchema(code=error_code)})
+        result5 = await client.call_tool("execute_code", {"code": error_code})
         print(f"Result:\n\n {result5.data.output}")
 
 if __name__ == "__main__":
