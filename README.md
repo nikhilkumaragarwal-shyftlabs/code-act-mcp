@@ -55,7 +55,7 @@ With your virtual environment activated:
 ```bash
 python agentrun-api/src/api/main.py
 ```
-- The server will listen on port 3456 by default (SSE transport).
+- The server will listen on port 3000 by default (SSE transport), but this can be configured via the `PORT` environment variable.
 - The MCP tool `execute_code` will be available for clients.
 - **Note:** By default, the server looks for a container named `agentrun-api_python_runner_1`. If you want to use a different name, set the `CONTAINER_NAME` environment variable before starting the server.
 
@@ -69,13 +69,34 @@ See `tests/simple_test.py` and `tests/test_client.py` for usage examples.
 ```python
 from fastmcp import Client
 import asyncio
+import os
 
 async def test():
-    async with Client("http://localhost:3456/sse") as client:
+    port = os.getenv("PORT", "3000")
+    async with Client(f"http://localhost:{port}/sse") as client:
         result = await client.call_tool("execute_code", {"code": "print('Hello, World!')"})
         print(result.text)
 
 asyncio.run(test())
+```
+
+---
+
+## Environment Variables
+
+The following environment variables can be configured in your `.env` file:
+
+- `PORT`: The port on which the MCP server will listen (default: 3000)
+- `CONTAINER_NAME`: The name of the Docker container for code execution (default: "agentrun_python_runner_1")
+- `CODE_DIR`: The directory containing the code to run (default: "/code")
+- `DEPENDENCIES_DIR`: The directory for installing dependencies (default: "/home/pythonuser/.local/lib/python3.12/site-packages")
+
+Example `.env` file:
+```env
+PORT=3000
+CONTAINER_NAME="agentrun_python_runner_1"
+CODE_DIR="/code"
+DEPENDENCIES_DIR="/home/pythonuser/.local/lib/python3.12/site-packages"
 ```
 
 ---

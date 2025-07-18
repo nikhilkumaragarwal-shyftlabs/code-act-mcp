@@ -12,6 +12,11 @@ RUN useradd --create-home pythonuser
 USER pythonuser
 WORKDIR /code
 
+# Add user's home directory to PATH so uv can be found when installed with --user
+ENV PATH="/home/pythonuser/.local/bin:$PATH" 
+
+RUN echo $PATH
+
 # Optional: Only if you have specific dependencies
 # COPY --chown=appuser:appuser requirements.txt .
 # RUN pip install --user -r requirements.txt

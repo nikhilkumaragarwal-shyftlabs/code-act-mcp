@@ -1,4 +1,3 @@
-print("[DEBUG] Starting main.py...")
 import asyncio
 import os
 from concurrent.futures import ThreadPoolExecutor
@@ -31,7 +30,7 @@ async def execute_code(code: str) -> OutputSchema:
     """
     # AgentRun 
     runner = AgentRun(
-        container_name=os.environ.get("CONTAINER_NAME", "agentrun-api_python_runner_1"),  # Default container name
+        container_name=os.environ.get("CONTAINER_NAME", "code_act_python_runner_1"),  # Default container name
         cached_dependencies=[],
         default_timeout=60 * 5,
     )
@@ -41,7 +40,4 @@ async def execute_code(code: str) -> OutputSchema:
         output = await asyncio.wrap_future(future)
     return OutputSchema(output=output)
 
-
-print("[DEBUG] About to start MCP server with mcp.run...")
-mcp.run(transport="sse", host="0.0.0.0", port=3456)
 

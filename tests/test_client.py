@@ -1,9 +1,11 @@
 from fastmcp import Client
 import asyncio
+import os
 
 async def main():
     # Connect via SSE to your MCP server
-    async with Client("http://localhost:3456/sse") as client:
+    port = os.getenv("PORT", "3000")
+    async with Client(f"http://localhost:{port}/sse") as client:
         # List available tools
         tools = await client.list_tools()
         print(f"Available tools: {[t.name for t in tools]}")

@@ -3,14 +3,14 @@ services:
     build:
       context: ./ 
       dockerfile: docker/api/Dockerfile
-    command: fastmcp run api/main.py:mcp --host 0.0.0.0 -p 3456 -t sse
+    command: fastmcp run api/main.py:mcp --host 0.0.0.0 -p ${PORT:-3000} -t sse
     volumes:
       - ./src:/code 
       - /var/run/docker.sock:/var/run/docker.sock
     ports:
-      - "3456:3456"
+      - "${PORT:-3000}:${PORT:-3000}"
     env_file:
-      - ./.env.dev 
+      - ./.env
 
   python_runner:
     build:

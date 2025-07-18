@@ -9,5 +9,4 @@ pydantic
 uvicorn
 docker
 RestrictedPython
-uv
 
