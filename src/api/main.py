@@ -30,7 +30,7 @@ async def execute_code(code: str) -> OutputSchema:
     """
     # AgentRun 
     runner = AgentRun(
-        container_name=os.environ.get("CONTAINER_NAME", "code_act_python_runner_1"),  # Default container name
+        container_name=os.environ.get("CONTAINER_NAME", "code-act-mcp_python_runner_1"),  # Default container name
         cached_dependencies=[],
         default_timeout=60 * 5,
     )
